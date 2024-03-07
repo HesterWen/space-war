@@ -12,14 +12,12 @@ GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 YELLOW = (255, 255, 0)
 
-# 遊戲初始化 and 創建視窗
 pygame.init()
 pygame.mixer.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("太空船")
 clock = pygame.time.Clock()
 
-# 載入圖片
 background_img = pygame.image.load(os.path.join("img", "background.png")).convert()
 player_img = pygame.image.load(os.path.join("img", "player.png")).convert()
 player_mini_img = pygame.transform.scale(player_img, (25, 19))
@@ -30,7 +28,6 @@ rock_imgs = []
 for i in range(7):
     rock_imgs.append(pygame.image.load(os.path.join("img", f"rock{i}.png")).convert())
 
-# 在expl_anim的字典中，每個鍵都是一個字符串('lg'、'sm'、'player')，而對應的值則是空列表
 expl_anim = {}
 expl_anim['lg'] = []
 expl_anim['sm'] = []
@@ -47,7 +44,6 @@ power_imgs = {}
 power_imgs['shield'] = pygame.image.load(os.path.join("img", "shield.png")).convert()
 power_imgs['gun'] = pygame.image.load(os.path.join("img", "gun.png")).convert()
 
-# 載入音樂、音效
 shoot_sound = pygame.mixer.Sound(os.path.join("sound", "shoot.wav"))
 gun_sound = pygame.mixer.Sound(os.path.join("sound", "pow1.wav"))
 shield_sound = pygame.mixer.Sound(os.path.join("sound", "pow0.wav"))
@@ -100,7 +96,6 @@ def draw_init():
     waiting = True
     while waiting:
         clock.tick(FPS)
-        # 取得輸入
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -116,7 +111,6 @@ class Player(pygame.sprite.Sprite):
         self.image.set_colorkey(BLACK)
         self.rect = self.image.get_rect()
         self.radius = 20
-        # pygame.draw.circle(self.image, RED, self.rect.center, self.radius)
         self.rect.centerx = WIDTH / 2
         self.rect.bottom = HEIGHT - 10
         self.speedx = 8
@@ -182,7 +176,6 @@ class Rock(pygame.sprite.Sprite):
         self.image = self.image_ori.copy()
         self.rect = self.image.get_rect()
         self.radius = int(self.rect.width * 0.85 / 2)
-        # pygame.draw.circle(self.image, RED, self.rect.center, self.radius)
         self.rect.x = random.randrange(0, WIDTH - self.rect.width)
         self.rect.y = random.randrange(-180, -100)
         self.speedy = random.randrange(2, 5)
@@ -265,7 +258,6 @@ class Power(pygame.sprite.Sprite):
             
 pygame.mixer.music.play(-1)
 
-# 遊戲迴圈
 show_init = True
 running = True
 while running:
@@ -285,7 +277,7 @@ while running:
         score = 0
         
     clock.tick(FPS)
-    # 取得輸入
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -293,9 +285,8 @@ while running:
             if event.key == pygame.K_SPACE:
                 player.shoot()
                 
-    # 更新遊戲
     all_sprites.update()
-    # 判斷石頭 子彈相撞
+
     hits = pygame.sprite.groupcollide(rocks, bullets, True, True)
     for hit in hits:
         random.choice(expl_sounds).play()
@@ -308,7 +299,6 @@ while running:
             powers.add(pow)
         new_rock()
         
-    # 判斷石頭 飛船相撞
     hits = pygame.sprite.spritecollide(player, rocks, True, pygame.sprite.collide_circle)
     for hit in hits:
         new_rock()
@@ -323,7 +313,6 @@ while running:
             player.health = 100
             player.hide()
             
-    # 判斷寶物 飛船相撞
     hits = pygame.sprite.spritecollide(player, powers, True)
     for hit in hits:
         if hit.type == 'shield':
@@ -338,7 +327,6 @@ while running:
     if player.lives == 0 and not(death_expl.alive()):
         show_init = True
         
-    # 畫面顯示
     screen.fill(BLACK)
     screen.blit(background_img, (0, 0))
     all_sprites.draw(screen)
@@ -349,28 +337,3 @@ while running:
     
 pygame.quit()
 
-'''
-# line 65:
-在 pygame 中，font.render 函數的第二個參數是用來指定是否啟用抗鋸齒（antialiasing）效果的布林值。
-抗鋸齒是一種渲染技術，旨在使文字在較小字號或較低解析度下看起來更加平滑和清晰。
-font.render 函數的相關參數如下：
-第一個參數 (text): 要渲染的文字字符串。
-第二個參數 (antialias): 一個布林值，指定是否啟用抗鋸齒效果。若設置為 True，則啟用抗鋸齒；
-若設置為 False，則禁用抗鋸齒。
-
-# line 299:
-在 pygame.sprite.groupcollide 中，第三和第四個參數是 dokilla 和 dokillb，
-分別指定在碰撞發生時是否要摧毀 sprite 群組 A (rocks) 和 sprite 群組 B (bullets) 中的對應 sprite。
-dokilla=True：當碰撞發生時，會將在 sprite 群組 A (rocks) 中碰到的 sprite 從該群組中移除（銷毀）。
-dokillb=True：當碰撞發生時，會將在 sprite 群組 B (bullets) 中碰到的 sprite 從該群組中移除（銷毀）。
-
-# destination_surface.blit(source_surface, (x, y))
-screen.blit() 中的 blit 是 "block transfer" 的縮寫。這是一個用於將一個圖像（Surface）
-繪製到另一個圖像或屏幕上的方法。
-在 screen.blit() 中，screen 是表示遊戲視窗或屏幕的 Surface 對象，而 blit 則是將其他 Surface（例如圖像）的
-像素複製到屏幕 Surface 上的方法。
-語法如下:
-destination_surface 是目標 Surface，表示將圖像繪製到的目標。
-source_surface 是源 Surface，表示要從中複製像素的圖像。
-(x, y) 是目標 Surface 上的位置，表示將源 Surface 的左上角放置在目標 Surface 上的這個位置。
-'''
