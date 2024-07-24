@@ -12,12 +12,14 @@ GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 YELLOW = (255, 255, 0)
 
+# create window
 pygame.init()
 pygame.mixer.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("太空船")
 clock = pygame.time.Clock()
 
+# images loading
 background_img = pygame.image.load(os.path.join("img", "background.png")).convert()
 player_img = pygame.image.load(os.path.join("img", "player.png")).convert()
 player_mini_img = pygame.transform.scale(player_img, (25, 19))
@@ -44,6 +46,7 @@ power_imgs = {}
 power_imgs['shield'] = pygame.image.load(os.path.join("img", "shield.png")).convert()
 power_imgs['gun'] = pygame.image.load(os.path.join("img", "gun.png")).convert()
 
+# music loading
 shoot_sound = pygame.mixer.Sound(os.path.join("sound", "shoot.wav"))
 gun_sound = pygame.mixer.Sound(os.path.join("sound", "pow1.wav"))
 shield_sound = pygame.mixer.Sound(os.path.join("sound", "pow0.wav"))
@@ -258,6 +261,7 @@ class Power(pygame.sprite.Sprite):
             
 pygame.mixer.music.play(-1)
 
+# game loop
 show_init = True
 running = True
 while running:
@@ -284,9 +288,11 @@ while running:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 player.shoot()
-                
+    
+    # update game             
     all_sprites.update()
 
+    # recognize whether bullets hit rocks 
     hits = pygame.sprite.groupcollide(rocks, bullets, True, True)
     for hit in hits:
         random.choice(expl_sounds).play()
@@ -298,7 +304,8 @@ while running:
             all_sprites.add(pow)
             powers.add(pow)
         new_rock()
-        
+
+    # recognize whether the airship hit rocks   
     hits = pygame.sprite.spritecollide(player, rocks, True, pygame.sprite.collide_circle)
     for hit in hits:
         new_rock()
@@ -312,7 +319,8 @@ while running:
             player.lives -= 1
             player.health = 100
             player.hide()
-            
+
+    # recognize whether the airship hit an item        
     hits = pygame.sprite.spritecollide(player, powers, True)
     for hit in hits:
         if hit.type == 'shield':
@@ -326,7 +334,8 @@ while running:
             
     if player.lives == 0 and not(death_expl.alive()):
         show_init = True
-        
+    
+    # display
     screen.fill(BLACK)
     screen.blit(background_img, (0, 0))
     all_sprites.draw(screen)
